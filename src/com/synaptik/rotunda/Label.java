@@ -1,10 +1,8 @@
 package com.synaptik.rotunda;
 
 import android.graphics.Canvas;
-import android.graphics.Paint;
 
 import com.synaptik.rotunda.managers.FontManager;
-import com.synaptik.rotunda.values.FloatValue;
 
 /**
  * Text label. Use Font name loaded in FontManager (file name). If you
@@ -16,58 +14,74 @@ import com.synaptik.rotunda.values.FloatValue;
  * @author Edward
  *
  */
-public class Label extends Actor {
-	boolean dirty;
-	
-	String mText;
-	
-	FloatValue x;
-	FloatValue y;
-	
-	Paint mPaint;
+public class Label extends MovableActor {
+	protected String mText;
+	protected float mPivotX;
+	protected float mPivotY;
 	
 	public Label(String font, String text) {
-		this.mPaint = new Paint();
+		super();
 		this.mPaint.setTypeface(FontManager.getFont(font));
 		this.mPaint.setAntiAlias(true);
 		this.mPaint.setColor(0xFFFFFFFF);
 		this.mPaint.setTextSize(12.0f);
-		x = new FloatValue(0.0f);
-		y = new FloatValue(12.0f);
-		this.dirty = true;
-		this.mText = text;
+		setText(text);
 	}
 	
-	public void setTextSize(float size) {
+	protected void updatePivotPoint() {
+		this.mPaint.getTextBounds(this.mText, 0, this.mText.length(), this.mBoundingBox);
+		this.mWidth = this.mBoundingBox.width();
+		this.mHeight = this.mBoundingBox.height();
+		this.mPivotX = this.mWidth * this.mAnchorX;
+		this.mPivotY = -this.mHeight * this.mAnchorY;
+	}
+	
+	public Label setTextSize(float size) {
 		this.mPaint.setTextSize(size);
-		
+		updatePivotPoint();
+		return this;
 	}
 	
-	protected boolean isDirty() {
-		return this.dirty;
+	public Label setColor(int color) {
+		this.mPaint.setColor(color);
+		return this;
 	}
 	
-	protected void dirty() {
-		this.dirty = true;
+	public Label setAnchor(float x, float y) {
+		this.mAnchorX = x;
+		this.mAnchorY = y;
+		updatePivotPoint();
+		return this;
 	}
 	
-	public void setColor(int color) {
-		mPaint.setColor(color);
+	/**
+	 * In degrees
+	 * @param angle
+	 * @return
+	 */
+	public Label setAngle(float angle) {
+		this.angle.data = angle;
+		return this;
 	}
 	
-	@Override
-	public boolean update(double elapsed) {
-		return true;
+	public Label setPosition(float x, float y) {
+		this.x.data = x;
+		this.y.data = y;
+		return this;
 	}
 	
-	public void setText(String text) {
+	public Label setText(String text) {
 		this.mText = text;
+		updatePivotPoint();
+		return this;
 	}
 	
 	public void render(Canvas canvas) {
 		canvas.save();
-		canvas.translate(x.data, y.data);
-		canvas.drawText(mText, this.x.data, this.y.data, mPaint);
+		canvas.translate(this.x.data, this.y.data);
+		canvas.translate(-this.mBoundingBox.width() * this.mAnchorX, -this.mBoundingBox.height() * this.mAnchorY);
+		canvas.rotate(this.angle.data, this.mPivotX, this.mPivotY + this.mBoundingBox.height());
+		canvas.drawText(this.mText, 0.0f, this.mBoundingBox.height(), this.mPaint);
 		canvas.restore();
 		this.dirty = false;
 	}

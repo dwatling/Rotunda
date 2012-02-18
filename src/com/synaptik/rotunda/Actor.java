@@ -3,14 +3,16 @@ package com.synaptik.rotunda;
 import android.graphics.Canvas;
 
 public abstract class Actor {
-	String name;
-	boolean flaggedForRemoval;
+	protected String name;
+	protected boolean flaggedForRemoval;
+	protected boolean paused;
 
 	public abstract boolean update(double elapsed);
 	public abstract void render(Canvas canvas);
 	
 	public Actor() {
-		flaggedForRemoval = false;
+		this.flaggedForRemoval = false;
+		this.paused = false;
 	}
 	
 	public String getName() {
@@ -19,5 +21,12 @@ public abstract class Actor {
 	
 	public void remove() {
 		this.flaggedForRemoval = true;
+	}
+	
+	public void pause() {
+		this.paused = true;
+	}
+	public void unpause() {
+		this.paused = false;
 	}
 }

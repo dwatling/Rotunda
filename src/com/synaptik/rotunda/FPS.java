@@ -10,6 +10,7 @@ package com.synaptik.rotunda;
 public class FPS extends Label {
 	public FPS(String font, int color) {
 		super(font, "0");
+		setAnchor(0.0f, 0.0f);
 		setColor(color);
 		setTextSize(36.0f);
 	}

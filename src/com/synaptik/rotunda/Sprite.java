@@ -2,21 +2,11 @@ package com.synaptik.rotunda;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.view.MotionEvent;
 
 import com.synaptik.rotunda.managers.ImageManager;
-import com.synaptik.rotunda.values.FloatValue;
 
-public class Sprite extends Actor implements FloatValue.AnimationListener {
-	boolean dirty;
-	
-	public FloatValue x;
-	public FloatValue y;
-	public int width;
-	public int height;
-	
-	protected Paint mPaint;
+public class Sprite extends MovableActor {
 	protected Bitmap bitmap;
 	protected String bitmapKey;
 	
@@ -24,62 +14,47 @@ public class Sprite extends Actor implements FloatValue.AnimationListener {
 	
 	public Sprite(String bitmapKey) {
 		super();
-		this.mPaint = new Paint();
-		this.x = new FloatValue(0.0f);
-		this.y = new FloatValue(0.0f);
-		this.x.setAnimationListener(this);
-		this.y.setAnimationListener(this);
 		this.bitmap = ImageManager.getBitmap(bitmapKey);
 		this.bitmapKey = bitmapKey;
 		assert bitmap != null;
 		if (bitmap != null) {
 			this.dirty = true;
-			this.width = bitmap.getWidth();
-			this.height = bitmap.getHeight();
+			this.mWidth = bitmap.getWidth();
+			this.mHeight = bitmap.getHeight();
 		}
-	}
-	
-	protected boolean isDirty() {
-		return this.dirty;
-	}
-	
-	protected void dirty() {
-		this.dirty = true;
 	}
 	
 	public String getBitmapKey() {
 		return this.bitmapKey;
 	}
+
+	public Sprite setAnchor(float x, float y) {
+		this.mAnchorX = x;
+		this.mAnchorY = y;
+		recalculateBoundingBox();
+		return this;
+	}
 	
-	@Override
-	public boolean update(double elapsed) {
-		this.dirty = this.x.update(elapsed) | this.y.update(elapsed);
-		return isDirty();
+	public Sprite setPosition(float x, float y) {
+		this.x.data = x;
+		this.y.data = y;
+		recalculateBoundingBox();
+		
+		return this;
 	}
 	
 	public void render(Canvas canvas) {
 //		if (isDirty()) {
 			canvas.save();
-			canvas.translate(x.data, y.data);
-			canvas.drawBitmap(bitmap, 0.0f, 0.0f, mPaint);
+			float x = this.x.data - (this.mWidth * this.mAnchorX * this.scale.data);
+			float y = this.y.data - (this.mHeight * this.mAnchorY * this.scale.data);
+			canvas.translate(x, y);
+			canvas.rotate(this.angle.data, this.mWidth * this.mAnchorX * this.scale.data, this.mHeight * this.mAnchorY * this.scale.data);
+			canvas.scale(this.scale.data, this.scale.data);
+			canvas.drawBitmap(this.bitmap, 0.0f, 0.0f, this.mPaint);
 			canvas.restore();
 			this.dirty = false;
 //		}
-	}
-	
-	@Override
-	public void onAnimationEnd() {
-		if (!this.x.isAnimating() && !this.y.isAnimating()) {
-			this.mListener.onAnimationEnd(this);
-		}
-	}
-	
-	public void setAnimationListener(AnimationListener listener) {
-		this.mListener = listener;
-	}
-	
-	public boolean contains(float x, float y) {
-		return x >= this.x.data && y >= this.y.data && x <= (this.x.data+width) && y <= (this.y.data+height);
 	}
 	
 	public void onTouch(MotionEvent event) {

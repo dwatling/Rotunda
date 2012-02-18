@@ -5,8 +5,8 @@ public class FloatValue {
 	public float data;
 	float startData;
 	float targetData;
-	double targetElapsed;
-	double totalElapsed;
+	public double targetElapsed;
+	public double totalElapsed;
 	boolean animating;
 	AnimationListener mListener;
 	
@@ -36,7 +36,7 @@ public class FloatValue {
 	
 	public boolean update(double elapsed) {
 		boolean result = false;
-		if (this.targetElapsed > 0) {
+		if (this.targetElapsed > 0.0f) {
 			this.totalElapsed += elapsed;
 			double pct = (this.totalElapsed / this.targetElapsed);
 			
@@ -63,6 +63,11 @@ public class FloatValue {
 		this.targetElapsed = targetTime;
 		this.animating = true;
 	}
+	
+	public void stopAnimating() {
+		this.targetElapsed = 0.0f;
+	}
+	
 	public boolean isAnimating() {
 		return this.animating;
 	}

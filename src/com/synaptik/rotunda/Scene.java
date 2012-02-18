@@ -6,8 +6,11 @@ import java.util.List;
 import java.util.Map;
 
 import android.graphics.Canvas;
+import android.util.Log;
 
 /**
+ * TODO - Need to support multiple resolutions. Stretch, center, or clip.
+ * 
  * @author dan
  */
 public class Scene {
@@ -41,12 +44,20 @@ public class Scene {
 	}
 	
 	public void addActor(String name, Actor actor) {
-		actor.name = name;
-		mActors.add(actor);
+		if (mActors.contains(name)) {
+			Log.e("Scene", "Scene already contains actor '" + name + "'! Not added.");
+		} else {
+			actor.name = name;
+			mActors.add(actor);
+		}
 	}
 	
 	public void addEvent(String name, Event event) {
-		mEvents.put(name,  event);
+		if (mEvents.containsKey(name)) {
+			Log.e("Scene", "Scene already contains event '" + name + "'! Not added.");
+		} else {
+			mEvents.put(name,  event);
+		}
 	}
 	
 	public void triggerEvent(String name) {
@@ -89,13 +100,13 @@ public class Scene {
 		this.mPaused = b;
 	}
 	
-	public Sprite findSprite(float x, float y) {
-		Sprite result = null;
+	public MovableActor findActor(float x, float y) {
+		MovableActor result = null;
 		for (findIndex = mActors.size()-1; findIndex >= 0; findIndex --) {
 			Actor a = mActors.get(findIndex);
-			if (a instanceof Sprite) {
-				if (((Sprite)a).contains(x,y)) {
-					result = (Sprite)a;
+			if (a instanceof MovableActor) {
+				if (((MovableActor)a).contains(x,y)) {
+					result = (MovableActor)a;
 					break;
 				}
 			}
