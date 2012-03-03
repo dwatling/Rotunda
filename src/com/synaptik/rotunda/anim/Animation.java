@@ -3,10 +3,17 @@ package com.synaptik.rotunda.anim;
 import com.synaptik.rotunda.MovableActor;
 
 public abstract class Animation {
-	public float totalTime;
+	protected float mTargetElapsed;
+	float mTimeOffset;
 	
-	public Animation(float totalElapsed) {
-		this.totalTime = totalElapsed;
+	public Animation(float targetElapsed) {
+		this.mTargetElapsed = targetElapsed;
 	}
-	public abstract double update(double elapsed, MovableActor actor);
+	protected float getTargetElapsed() {
+		return this.mTargetElapsed;
+	}
+	void setTimeOffset(float offset) {
+		this.mTimeOffset = offset;
+	}
+	public abstract double update(double totalElapsed, double elapsed, MovableActor actor);
 }

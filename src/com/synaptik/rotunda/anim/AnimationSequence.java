@@ -3,44 +3,50 @@ package com.synaptik.rotunda.anim;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.util.Log;
+
 import com.synaptik.rotunda.MovableActor;
 
 public class AnimationSequence {
 	List<Animation> animations;
-	int timesToRepeat = -1;
-	float totalAnimationTime = 0.0f;
+	int mTimesToRepeat = 1;
+	float mTotalAnimationTime = 0.0f;
 	Animation currentAnimation;
+	public String mKey;
 	
-	public AnimationSequence() {
+	public AnimationSequence(String key) {
 		this.animations = new ArrayList<Animation>();
-		timesToRepeat = -1;
+		this.mKey = key;
+		mTimesToRepeat = 1;
 	}
 	
 	/**
 	 * @return True if it animated, false if it did not
 	 */
 	public boolean update(double totalElapsed, double elapsed, MovableActor actor) {
-		currentAnimation = getCurrentAnimation(totalElapsed);
+		double normalizedElapsed = totalElapsed % this.mTotalAnimationTime;
+//		Log.d(mKey, "" + totalElapsed + " / " + normalizedElapsed + ", " + elapsed + ", " + actor.getName());
+		currentAnimation = getCurrentAnimation(normalizedElapsed);
 		if (currentAnimation != null) {
-			double timeLeft = currentAnimation.update(elapsed, actor);
+			double currentAnimationTotalElapsed = normalizedElapsed - currentAnimation.mTimeOffset;
+			double timeLeft = currentAnimation.update(currentAnimationTotalElapsed, elapsed, actor);
+//			Log.d(actor.getName() + " - " + currentAnimation.getClass().getSimpleName(), "Animation timeLeft: " + timeLeft);
 			if (timeLeft <= 0.0f) {
 				// This means there is still timeLeft in the animation sequence that needs to be allocated to the next animation
-				totalElapsed -= timeLeft;
-				currentAnimation = getCurrentAnimation(totalElapsed);
-				update(totalElapsed, Math.abs(timeLeft), actor);
+				totalElapsed += elapsed + timeLeft;
+				return update(totalElapsed, -timeLeft, actor);
 			}
 		}
 		return currentAnimation != null;
 	}
 	
-	protected Animation getCurrentAnimation(double elapsed) {
+	protected Animation getCurrentAnimation(double normalizedElapsed) {
 		Animation result = null;
-		double normalizedElapsed = elapsed % totalAnimationTime;
-		int timesRepeated = (int)(elapsed / totalAnimationTime);
-		if (timesToRepeat < 0 || timesRepeated < timesToRepeat) {
+		int timesRepeated = (int)(normalizedElapsed / this.mTotalAnimationTime);
+		if (this.mTimesToRepeat < 0 || timesRepeated < this.mTimesToRepeat) {
 			float currentFrameEnd = 0.0f;
 			for (Animation a : animations) {
-				currentFrameEnd += a.totalTime;
+				currentFrameEnd += a.getTargetElapsed();
 				if (normalizedElapsed < currentFrameEnd) {
 					result = a;
 					break;
@@ -51,13 +57,27 @@ public class AnimationSequence {
 	}
 	
 	public AnimationSequence add(Animation a) {
+		a.setTimeOffset(this.mTotalAnimationTime);
 		this.animations.add(a);
-		this.totalAnimationTime += a.totalTime;
+		this.mTotalAnimationTime += a.getTargetElapsed();
 		return this;
 	}
 	
 	public AnimationSequence repeat(int times) {
-		this.timesToRepeat = times;
+		this.mTimesToRepeat = times;
 		return this;
+	}
+	
+	public AnimationSequence infiniteRepeat() {
+		this.mTimesToRepeat = -1;
+		return this;
+	}
+	
+	public boolean isInfinite() {
+		return this.mTimesToRepeat == -1;
+	}
+	
+	public float getAnimationTime() {
+		return this.mTotalAnimationTime;
 	}
 }

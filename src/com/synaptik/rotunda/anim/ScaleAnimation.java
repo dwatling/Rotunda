@@ -2,24 +2,15 @@ package com.synaptik.rotunda.anim;
 
 import com.synaptik.rotunda.MovableActor;
 
-public class ScaleAnimation extends Animation {
-	float target;
-	
-	public ScaleAnimation(float target, float totalElapsed) {
-		super(totalElapsed);
-		this.target = target;
+public class ScaleAnimation extends BaseValueAnimation {
+	public ScaleAnimation(float target, float targetElapsed) {
+		super(targetElapsed, target);
 	}
 	
-	/**
-	 * @return Time left over
-	 */
 	@Override
-	public double update(double elapsed, MovableActor actor) {
-		if (!actor.scale.isAnimating()) {
-			actor.scale.animateTo(this.target, this.totalTime);
-		}
-		double result = actor.scale.targetElapsed - elapsed;
-		actor.scale.update(elapsed);
-		return result;
+	public double update(double totalElapsed, double elapsed, MovableActor actor) {
+		float startValue = determineStartValue(actor.scale, this.mTargetValue, (float)totalElapsed, this.mTargetElapsed);
+		actor.scale = determineNewValue(actor.scale, startValue, totalElapsed + elapsed);
+		return this.mTargetElapsed - totalElapsed;
 	}
 }

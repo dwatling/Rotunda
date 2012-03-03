@@ -2,13 +2,11 @@ package com.synaptik.rotunda.anim;
 
 import com.synaptik.rotunda.MovableActor;
 
-public class TranslationAnimation extends Animation {
+public class TranslationAnimation extends BaseValueAnimation {
 	boolean xAxis;
-	float target;
 	
-	public TranslationAnimation(String type, float target,float totalElapsed) {
-		super(totalElapsed);
-		this.target = target;
+	public TranslationAnimation(String type, float target,float targetElapsed) {
+		super(targetElapsed, target);
 		if ("x".equalsIgnoreCase(type)) {
 			xAxis = true;
 		} else {
@@ -20,21 +18,14 @@ public class TranslationAnimation extends Animation {
 	 * @return Time left over
 	 */
 	@Override
-	public double update(double elapsed, MovableActor actor) {
-		double result = 0.0f;
+	public double update(double totalElapsed, double elapsed, MovableActor actor) {
 		if (xAxis) {
-			if (!actor.x.isAnimating()) {
-				actor.x.animateTo(this.target, this.totalTime);
-			}
-			result = actor.x.targetElapsed - elapsed;
-			actor.x.update(elapsed);
+			float startValue = determineStartValue(actor.x, this.mTargetValue, (float)totalElapsed, this.mTargetElapsed);
+			actor.x = determineNewValue(actor.x, startValue, totalElapsed + elapsed);
 		} else {
-			if (!actor.y.isAnimating()) {
-				actor.y.animateTo(this.target, this.totalTime);
-			}
-			result = actor.y.targetElapsed - elapsed;
-			actor.y.update(elapsed);
+			float startValue = determineStartValue(actor.y, this.mTargetValue, (float)totalElapsed, this.mTargetElapsed);
+			actor.y = determineNewValue(actor.y, startValue, totalElapsed + elapsed);
 		}
-		return result;
+		return this.mTargetElapsed - totalElapsed;
 	}
 }
