@@ -18,34 +18,57 @@ public class ImageManager {
 	private static final String TAG = "ImageManager";
 	static Map<String, Bitmap> mImages;
 	
-	public static void init(Context c) {
-		Log.d(TAG, "init(" + c + ")");
+	static {
 		mImages = new HashMap<String, Bitmap>();
-		try {
-			AssetManager am = c.getAssets();
-			String[] images = am.list("img");
-			loadImages(am, images);
-		} catch (IOException e) {
-			Log.w(TAG, "Unable to load images", e);
-		}
 	}
-	
-	private static void loadImages(AssetManager am, String[] images) throws IOException {
-		Log.w(TAG, "Found " + images.length + " images.");
+//	public static void init(Context c) {
+//		Log.d(TAG, "init(" + c + ")");
+//		mImages = new HashMap<String, Bitmap>();
+//		try {
+//			AssetManager am = c.getAssets();
+//			String[] images = am.list("img");
+//			loadImages(c, images);
+//		} catch (IOException e) {
+//			Log.w(TAG, "Unable to load images", e);
+//		}
+//	}
+//	
+	private static Map<String,String> buildMap(String[] files) {
+		Map<String,String> result = new HashMap<String,String>();
+		for (String file : files) {
+			String key = file.substring(0, file.indexOf("."));
+			result.put(key, file);
+		}
+		return result;
+	}
+	public static void loadImages(Context ctx, String... images) {
+		AssetManager am = ctx.getAssets();
+		Map<String,String> keys = new HashMap<String,String>();
+		try {
+			keys = buildMap(am.list("img"));
+		} catch (IOException ex) {
+			Log.w(TAG, "Unable to retrieve list of images");
+		}
+		
 		for (String img : images) {
 			InputStream is = null;
 			try {
-				is = am.open("img/" + img);
+				is = am.open("img/" + keys.get(img));
 				Options opts = new Options();
 				Bitmap bmp = BitmapFactory.decodeStream(is, null, opts);
-				String key = img.substring(0, img.indexOf("."));
 				
-				mImages.put(key, bmp);
+				mImages.put(img, bmp);
 				
-				Log.w(TAG, "Loaded image '" + key + "'.");
+				Log.w(TAG, "Loaded image '" + img + "'.");
+			} catch (IOException ex) {
+				Log.e(TAG, "Unable to load image 'assets/img/" + img + "'");
 			} finally {
 				if (is != null) {
-					is.close();
+					try {
+						is.close();
+					} catch (IOException ex) {
+						// do nothing
+					}
 				}
 			}
 		}
@@ -76,10 +99,8 @@ public class ImageManager {
 	}
 	
 	public static void close() {
-		Log.d(TAG, "close");
 		if (mImages != null) {
 			mImages.clear();
-			mImages = null;
 		}
 	}
 }

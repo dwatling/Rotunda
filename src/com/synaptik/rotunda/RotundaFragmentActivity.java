@@ -49,9 +49,9 @@ public abstract class RotundaFragmentActivity extends FragmentActivity implement
 	@Override
 	protected void onStart() {
 		super.onStart();
-		ImageManager.init(getApplicationContext());
-		SoundManager.init(getApplicationContext());
-		FontManager.init(getApplicationContext());
+//		ImageManager.init(getApplicationContext());
+//		SoundManager.init(getApplicationContext());
+//		FontManager.init(getApplicationContext());
 	}
 
 	@Override

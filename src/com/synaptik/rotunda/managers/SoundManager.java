@@ -8,6 +8,8 @@ import java.util.Map;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
+import android.content.res.AssetManager;
+import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnPreparedListener;
@@ -32,86 +34,145 @@ public class SoundManager {
 	private static MediaPlayer mAmbiencePlayer;
 	private static SoundPool mSoundPool;
 	
-	public static void init(Context ctx) {
-		Log.d(TAG, "init(" + ctx + ")");
-		
+	static {
 		mSoundEffects = new ArrayList<SoundEffect>();
 		mActiveSounds = new ArrayList<Integer>();
-		
-		try {
-			loadSounds(ctx, ctx.getAssets().list("sound"));
-		} catch (IOException ex) {
-			Log.e(TAG, "Unable to load sounds.", ex);
-		}
-		
-		try {
-			loadMusic(ctx, ctx.getAssets().list("music"));
-		} catch (IOException ex) {
-			Log.e(TAG, "Unable to load music.", ex);
-		}
-		
-		try {
-			loadAmbience(ctx, ctx.getAssets().list("ambience"));
-		} catch (IOException ex) {
-			Log.e(TAG, "Unable to load ambience.", ex);
-		}
-	}
-	
-	public static void close() {
-		mMusicPlayer.release();
-		mAmbiencePlayer.release();
-		mSoundPool.release();
-		
-		mSoundEffects.clear();
-		mSoundEffects = null;
-		
-		mActiveSounds.clear();
-		mActiveSounds = null;
-	}
-	
-	private static void loadSounds(Context ctx, String sounds[]) throws IOException {
 		mSoundPool = new SoundPool(4, AudioManager.STREAM_MUSIC, 0);
 		mSounds = new HashMap<String, Integer>();
+	}
+	
+//	public static void init(Context ctx) {
+//		Log.d(TAG, "init(" + ctx + ")");
+//		
+//		mSoundEffects = new ArrayList<SoundEffect>();
+//		mActiveSounds = new ArrayList<Integer>();
+//		
+//		try {
+//			loadSounds(ctx, ctx.getAssets().list("sound"));
+//		} catch (IOException ex) {
+//			Log.e(TAG, "Unable to load sounds.", ex);
+//		}
+//		
+//		try {
+//			loadMusic(ctx, ctx.getAssets().list("music"));
+//		} catch (IOException ex) {
+//			Log.e(TAG, "Unable to load music.", ex);
+//		}
+//		
+//		try {
+//			loadAmbience(ctx, ctx.getAssets().list("ambience"));
+//		} catch (IOException ex) {
+//			Log.e(TAG, "Unable to load ambience.", ex);
+//		}
+//	}
+//	
+	public static void close() {
+		if (mMusicPlayer != null) {
+			mMusicPlayer.release();
+		}
+		
+		if (mAmbiencePlayer != null) {
+			mAmbiencePlayer.release();
+		}
+		
+		if (mSoundPool != null) {
+			mSoundPool.release();
+		}
+		
+		if (mSoundEffects != null) {
+			mSoundEffects.clear();
+		}
+		
+		if (mActiveSounds != null) {
+			mActiveSounds.clear();
+		}
+	}
+	
+	private static Map<String,String> buildMap(String[] files) {
+		Map<String,String> result = new HashMap<String,String>();
+		for (String file : files) {
+			String key = file.substring(0, file.indexOf("."));
+			result.put(key, file);
+		}
+		return result;
+	}
+	
+	public static void loadSounds(Context ctx, String... sounds) {
+		AssetManager am = ctx.getAssets();
+		Map<String,String> keys = new HashMap<String,String>();
+		try {
+			keys = buildMap(am.list("sound"));
+		} catch (IOException ex) {
+			Log.w(TAG, "Unable to retrieve list of images");
+		}
+
 		for (String sound : sounds) {
-			AssetFileDescriptor fd = ctx.getAssets().openFd("sound/" + sound);
-			int soundID = mSoundPool.load(fd, 0);
-			String key = sound.substring(0, sound.indexOf("."));
-			Log.w(TAG, "Loaded sound '" + key + "'.");
-			mSounds.put(key, soundID);
+			try {
+				AssetFileDescriptor fd = am.openFd("sound/" + keys.get(sound));
+				int soundID = mSoundPool.load(fd, 0);
+				Log.w(TAG, "Loaded sound '" + sound + "'.");
+				mSounds.put(sound, soundID);
+			} catch (IOException ex) {
+				Log.e(TAG, "Unable to load sound 'assets/sound/" + sound + "'");
+			}
 		}
 	}
 	
-	private static void loadMusic(Context ctx, String sounds[]) throws IOException {
+	public static void loadMusic(Context ctx, String... sounds) {
 		mMusicPlayer = new MediaPlayer();
+		AssetManager am = ctx.getAssets();
+		Map<String,String> keys = new HashMap<String,String>();
+		try {
+			keys = buildMap(am.list("music"));
+		} catch (IOException ex) {
+			Log.w(TAG, "Unable to retrieve list of images");
+		}
+		
 		if (sounds.length > 0) {
-			AssetFileDescriptor fd = ctx.getAssets().openFd("music/" + sounds[0]);
-			mMusicPlayer.setDataSource(fd.getFileDescriptor(), fd.getStartOffset(), fd.getLength());
-			mMusicPlayer.prepareAsync();
-			mMusicPlayer.setOnPreparedListener(new OnPreparedListener() {
-				@Override
-				public void onPrepared(MediaPlayer mp) {
-					Log.d(TAG, "Playing Music");
-					mp.setLooping(true);
-					mp.start();
-				}
-			});
+			try {
+				AssetFileDescriptor fd = am.openFd("music/" + keys.get(sounds[0]));
+				mMusicPlayer.setDataSource(fd.getFileDescriptor(), fd.getStartOffset(), fd.getLength());
+				mMusicPlayer.prepareAsync();
+				mMusicPlayer.setOnPreparedListener(new OnPreparedListener() {
+					@Override
+					public void onPrepared(MediaPlayer mp) {
+						Log.d(TAG, "Playing Music");
+						mp.setLooping(true);
+						mp.start();
+					}
+				});
+			} catch (IOException ex) {
+				Log.e(TAG, "Unable to load music 'assets/music/" + sounds[0]);
+			}
 		}
 	}
 	
-	private static void loadAmbience(Context ctx, String sounds[]) throws IOException {
+	public static void loadAmbience(Context ctx, String... sounds) {
 		mAmbiencePlayer = new MediaPlayer();
+		AssetManager am = ctx.getAssets();
+		Map<String,String> keys = new HashMap<String,String>();
+		try {
+			keys = buildMap(am.list("ambience"));
+		} catch (IOException ex) {
+			Log.w(TAG, "Unable to retrieve list of images");
+		}
+		
 		if (sounds.length > 0) {
-			AssetFileDescriptor fd = ctx.getAssets().openFd("ambience/" + sounds[0]);
-			mAmbiencePlayer.setDataSource(fd.getFileDescriptor(), fd.getStartOffset(), fd.getLength());
-			mAmbiencePlayer.prepareAsync();
-			mAmbiencePlayer.setOnPreparedListener(new OnPreparedListener() {
-				@Override
-				public void onPrepared(MediaPlayer mp) {
-					Log.d(TAG, "Playing Ambience");
-					mp.setLooping(true);
-					mp.start();
-				}
-			});
+			try {
+				AssetFileDescriptor fd = ctx.getAssets().openFd("ambience/" + keys.get(sounds[0]));
+				mAmbiencePlayer.setDataSource(fd.getFileDescriptor(), fd.getStartOffset(), fd.getLength());
+				mAmbiencePlayer.prepareAsync();
+				mAmbiencePlayer.setOnPreparedListener(new OnPreparedListener() {
+					@Override
+					public void onPrepared(MediaPlayer mp) {
+						Log.d(TAG, "Playing Ambience");
+						mp.setLooping(true);
+						mp.start();
+					}
+				});
+			} catch (IOException ex) {
+				Log.e(TAG, "Unable to load ambience 'assets/ambience/" + sounds[0]);
+			}
 		}
 	}
 	

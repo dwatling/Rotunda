@@ -13,25 +13,45 @@ public class FontManager {
 	private static final String TAG = "FontManager";
 	static Map<String, Typeface> mFonts;
 	
-	public static void init(Context c) {
-		Log.d(TAG, "init(" + c + ")");
+	static {
 		mFonts = new HashMap<String, Typeface>();
-		try {
-			AssetManager am = c.getAssets();
-			String[] fonts = am.list("fonts");
-			loadFonts(am, fonts);
-		} catch (IOException e) {
-			Log.w(TAG, "Unable to load images", e);
-		}
 	}
 	
-	private static void loadFonts(AssetManager am, String[] fonts) throws IOException {
+//	public static void init(Context c) {
+//		Log.d(TAG, "init(" + c + ")");
+//		mFonts = new HashMap<String, Typeface>();
+//		try {
+//			AssetManager am = c.getAssets();
+//			String[] fonts = am.list("fonts");
+//			loadFonts(c, fonts);
+//		} catch (IOException e) {
+//			Log.w(TAG, "Unable to load images", e);
+//		}
+//	}
+//	
+	private static Map<String,String> buildMap(String[] files) {
+		Map<String,String> result = new HashMap<String,String>();
+		for (String file : files) {
+			String key = file.substring(0, file.indexOf("."));
+			result.put(key, file);
+		}
+		return result;
+	}
+	
+	public static void loadFonts(Context ctx, String... fonts) {
 		Log.w(TAG, "Found " + fonts.length + " fonts.");
+		AssetManager am = ctx.getAssets();
+		Map<String,String> keys = new HashMap<String,String>();
+		try {
+			keys = buildMap(am.list("fonts"));
+		} catch (IOException ex) {
+			Log.w(TAG, "Unable to retrieve list of images");
+		}
+		
 		for (String font : fonts) {
-			Typeface tf = Typeface.createFromAsset(am, "fonts/" + font);
-			String key = font.substring(0, font.indexOf("."));
-			mFonts.put(key, tf);
-			Log.w(TAG, "Loaded font '" + key + "'.");
+			Typeface tf = Typeface.createFromAsset(am, "fonts/" + keys.get(font));
+			mFonts.put(font, tf);
+			Log.w(TAG, "Loaded font '" + font + "'.");
 		}
 	}
 	
@@ -47,6 +67,5 @@ public class FontManager {
 	
 	public static void close() {
 		mFonts.clear();
-		mFonts = null;
 	}
 }

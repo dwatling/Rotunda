@@ -19,10 +19,18 @@ public abstract class RotundaActivity extends Activity {
 	@Override
 	protected void onStart() {
 		super.onStart();
-		
-		ImageManager.init(this);
-		FontManager.init(this);
-		SoundManager.init(this);
+//		
+//		ImageManager.init(this);
+//		FontManager.init(this);
+//		SoundManager.init(this);
+	}
+	
+	@Override
+	protected void onStop() {
+		super.onStop();
+		ImageManager.close();
+		FontManager.close();
+		SoundManager.close();
 	}
 	
 	@Override
