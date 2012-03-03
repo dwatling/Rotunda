@@ -4,18 +4,10 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 
-import com.synaptik.rotunda.Actor;
-import com.synaptik.rotunda.MovableActor;
-import com.synaptik.rotunda.values.FloatValue;
-
-/**
- * TODO - Integrate into Rotunda
- * @author dan
- */
 public class DropArea extends Actor {
 	
-	FloatValue x;
-	FloatValue y;
+	float x;
+	float y;
 	float width;
 	float height;
 	Rect mBounds;
@@ -23,8 +15,8 @@ public class DropArea extends Actor {
 	OnDropListener mListener;
 
 	public DropArea(float x, float y, float width, float height) {
-		this.x = new FloatValue(x);
-		this.y = new FloatValue(y);
+		this.x = x;
+		this.y = y;
 		this.width = width;
 		this.height = height;
 		

@@ -10,6 +10,8 @@ import com.synaptik.rotunda.managers.SceneManager;
 
 public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
 	private static final String TAG = GameSurface.class.getSimpleName();
+	
+	SurfaceListener mListener;
 			
 	public GameSurface(Context context) {
 		super(context);
@@ -38,11 +40,18 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
 	public void surfaceCreated(SurfaceHolder holder) {
 		Log.d(TAG, "surfaceCreated");
 		SceneManager.init(getContext().getApplicationContext(), holder);
+		if (this.mListener != null) {
+			this.mListener.onSurfaceShown();
+		}
 	}
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		Log.d(TAG, "surfaceDestroyed");
 		SceneManager.close();
+	}
+	
+	public void setSurfaceListener(SurfaceListener listener) {
+		this.mListener = listener;
 	}
 	
 //	private class CheckerboardDrawable extends Drawable {

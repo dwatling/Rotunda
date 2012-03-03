@@ -60,13 +60,13 @@ public class Label extends MovableActor {
 	 * @return
 	 */
 	public Label setAngle(float angle) {
-		this.angle.data = angle;
+		this.angle = angle;
 		return this;
 	}
 	
 	public Label setPosition(float x, float y) {
-		this.x.data = x;
-		this.y.data = y;
+		this.x = x;
+		this.y = y;
 		return this;
 	}
 	
@@ -78,9 +78,9 @@ public class Label extends MovableActor {
 	
 	public void render(Canvas canvas) {
 		canvas.save();
-		canvas.translate(this.x.data, this.y.data);
+		canvas.translate(this.x, this.y);
 		canvas.translate(-this.mBoundingBox.width() * this.mAnchorX, -this.mBoundingBox.height() * this.mAnchorY);
-		canvas.rotate(this.angle.data, this.mPivotX, this.mPivotY + this.mBoundingBox.height());
+		canvas.rotate(this.angle, this.mPivotX, this.mPivotY + this.mBoundingBox.height());
 		canvas.drawText(this.mText, 0.0f, this.mBoundingBox.height(), this.mPaint);
 		canvas.restore();
 		this.dirty = false;

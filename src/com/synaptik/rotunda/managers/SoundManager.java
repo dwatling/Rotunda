@@ -33,6 +33,8 @@ public class SoundManager {
 	private static SoundPool mSoundPool;
 	
 	public static void init(Context ctx) {
+		Log.d(TAG, "init(" + ctx + ")");
+		
 		mSoundEffects = new ArrayList<SoundEffect>();
 		mActiveSounds = new ArrayList<Integer>();
 		
@@ -74,6 +76,7 @@ public class SoundManager {
 			AssetFileDescriptor fd = ctx.getAssets().openFd("sound/" + sound);
 			int soundID = mSoundPool.load(fd, 0);
 			String key = sound.substring(0, sound.indexOf("."));
+			Log.w(TAG, "Loaded sound '" + key + "'.");
 			mSounds.put(key, soundID);
 		}
 	}

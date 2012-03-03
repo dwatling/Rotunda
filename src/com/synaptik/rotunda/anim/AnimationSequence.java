@@ -26,7 +26,7 @@ public class AnimationSequence {
 	public boolean update(double totalElapsed, double elapsed, MovableActor actor) {
 		double normalizedElapsed = totalElapsed % this.mTotalAnimationTime;
 //		Log.d(mKey, "" + totalElapsed + " / " + normalizedElapsed + ", " + elapsed + ", " + actor.getName());
-		currentAnimation = getCurrentAnimation(normalizedElapsed);
+		currentAnimation = getCurrentAnimation(normalizedElapsed, totalElapsed);
 		if (currentAnimation != null) {
 			double currentAnimationTotalElapsed = normalizedElapsed - currentAnimation.mTimeOffset;
 			double timeLeft = currentAnimation.update(currentAnimationTotalElapsed, elapsed, actor);
@@ -40,9 +40,9 @@ public class AnimationSequence {
 		return currentAnimation != null;
 	}
 	
-	protected Animation getCurrentAnimation(double normalizedElapsed) {
+	protected Animation getCurrentAnimation(double normalizedElapsed, double totalElapsed) {
 		Animation result = null;
-		int timesRepeated = (int)(normalizedElapsed / this.mTotalAnimationTime);
+		int timesRepeated = (int)(totalElapsed / this.mTotalAnimationTime);
 		if (this.mTimesToRepeat < 0 || timesRepeated < this.mTimesToRepeat) {
 			float currentFrameEnd = 0.0f;
 			for (Animation a : animations) {
